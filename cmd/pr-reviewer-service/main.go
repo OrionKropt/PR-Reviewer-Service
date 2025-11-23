@@ -7,6 +7,7 @@ import (
 
 	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/config"
 	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/logger"
+	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/server"
 )
 
 func initialze() (cfg *config.Config, log *slog.Logger, err error) {
@@ -25,10 +26,16 @@ func initialze() (cfg *config.Config, log *slog.Logger, err error) {
 }
 
 func main() {
-	_, log, err := initialze()
+	cfg, log, err := initialze()
 	if err != nil {
 		stdlog.Fatal(err)
 		return
 	}
 	log.Info("Initializing PR reviewer service")
+
+	serv := server.NewServer(cfg, log)
+
+	if err = serv.Start(); err != nil {
+		log.Error("failed to start server", "error", err)
+	}
 }
