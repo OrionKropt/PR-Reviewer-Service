@@ -24,15 +24,15 @@ func NewPRReviewerService() *PRReviewerService {
 	}
 }
 
-func (s *PRReviewerService) AddTeam(name string, members []types.TeamMember) error {
+func (s *PRReviewerService) CreateTeam(name string, members []types.TeamMember) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.teams[name]; ok {
-		return fmt.Errorf("team %s already exists", name)
+		return dom.ErrTeamAlreadyExists
 	}
 	newTeam := dom.CreateTeam(name)
 	for _, m := range members {
-		newUser := dom.CreateUser(m.UserID, m.Username, name)
+		newUser := dom.CreateUser(m.UserID, m.Username, name, m.IsActive)
 		newTeam.AddMember(newUser)
 		s.users[m.UserID] = &newUser
 	}
@@ -45,7 +45,7 @@ func (s *PRReviewerService) GetTeam(name string) (*types.Team, error) {
 	defer s.mu.RUnlock()
 	team, ok := s.teams[name]
 	if !ok {
-		return nil, fmt.Errorf("team %s not found", name)
+		return nil, dom.ErrTeamNotFound
 	}
 	members := team.GetMembers()
 	outTeam := &types.Team{
@@ -67,9 +67,10 @@ func (s *PRReviewerService) SetIsActive(userId string, isActive bool) (*types.Us
 	defer s.mu.Unlock()
 	user, ok := s.users[userId]
 	if !ok {
-		return nil, fmt.Errorf("user %s not found", userId)
+		return nil, fmt.Errorf("user %s not found: ", userId)
 	}
 	user.IsActive = isActive
+	s.mu.Unlock()
 	outUser := &types.User{
 		UserID:   user.ID(),
 		Username: user.Name,
@@ -79,8 +80,34 @@ func (s *PRReviewerService) SetIsActive(userId string, isActive bool) (*types.Us
 	return outUser, nil
 }
 
-//func (s *PRReviewerService) createPullRequest(id, name, authorID string) {
-//	s.mu.Lock()
-//	defer s.mu.Unlock()
-//	s.prs[id] = dom.CreatePullRequest(id, authorID, name)
-//}
+func (s *PRReviewerService) CreatePullRequest(id, name, authorID string) (*types.PullRequest, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.prs[id]; ok {
+		return nil, dom.ErrPRExists
+	}
+	user, ok := s.users[authorID]
+	if !ok {
+		return nil, dom.ErrAuthorNotFound
+	}
+	team, ok := s.teams[user.TeamName]
+	if !ok {
+		return nil, dom.ErrTeamNotFound
+	}
+	newPR := dom.CreatePullRequest(id, name, authorID)
+	countReviewers := 0
+	for _, m := range team.GetMembers() {
+		if countReviewers >= 2 {
+			break
+		}
+		if m.IsActive && m.ID() != authorID {
+			newPR.AssignedReviewers = append(newPR.AssignedReviewers, m.ID())
+			countReviewers++
+		}
+	}
+	s.prs[id] = &newPR
+
+	outPR := types.CreatePullRequest(id, name, authorID, dom.PROpen, newPR.AssignedReviewers)
+
+	return outPR, nil
+}

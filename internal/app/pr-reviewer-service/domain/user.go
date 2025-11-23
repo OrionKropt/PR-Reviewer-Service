@@ -7,12 +7,12 @@ type User struct {
 	IsActive bool
 }
 
-func CreateUser(id, name, teamName string) User {
+func CreateUser(id, name, teamName string, isActive bool) User {
 	return User{
 		id:       id,
 		Name:     name,
 		TeamName: teamName,
-		IsActive: false,
+		IsActive: isActive,
 	}
 }
 

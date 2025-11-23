@@ -32,8 +32,12 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 	usersMux := http.NewServeMux()
 	usersMux.Handle("POST /setIsActive", loggingHandler(s.handleUsersSetIsActive()))
 
+	pullRequestMux := http.NewServeMux()
+	pullRequestMux.Handle("POST /create", loggingHandler(s.handlePRCreate()))
+
 	rootMux.Handle("/team/", http.StripPrefix("/team", teamMux))
 	rootMux.Handle("/users/", http.StripPrefix("/users", usersMux))
+	rootMux.Handle("/pullRequest/", http.StripPrefix("/pullRequest", pullRequestMux))
 
 	s.httpServer = &http.Server{
 		Addr:    cfg.BindAddr,
