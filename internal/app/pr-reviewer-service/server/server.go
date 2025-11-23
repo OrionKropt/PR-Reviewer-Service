@@ -7,6 +7,7 @@ import (
 
 	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/config"
 	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/core"
+	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/middleware"
 )
 
 type Server struct {
@@ -21,8 +22,19 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 		log:          log,
 	}
 
+	loggingHandler := middleware.LoggingMiddleware(log)
 	rootMux := http.NewServeMux()
-	
+
+	teamMux := http.NewServeMux()
+	teamMux.Handle("POST /add", loggingHandler(s.handleTeamAdd()))
+	teamMux.Handle("GET /get", loggingHandler(s.handleTeamGet()))
+
+	usersMux := http.NewServeMux()
+	usersMux.Handle("POST /setIsActive", loggingHandler(s.handleUsersSetIsActive()))
+
+	rootMux.Handle("/team/", http.StripPrefix("/team", teamMux))
+	rootMux.Handle("/users/", http.StripPrefix("/users", usersMux))
+
 	s.httpServer = &http.Server{
 		Addr:    cfg.BindAddr,
 		Handler: rootMux,
