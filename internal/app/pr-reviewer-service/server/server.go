@@ -34,6 +34,8 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 
 	pullRequestMux := http.NewServeMux()
 	pullRequestMux.Handle("POST /create", loggingHandler(s.handlePRCreate()))
+	pullRequestMux.Handle("POST /merge", loggingHandler(s.handlePRMerge()))
+	pullRequestMux.Handle("POST /reassign", loggingHandler(s.handlePRReassign()))
 
 	rootMux.Handle("/team/", http.StripPrefix("/team", teamMux))
 	rootMux.Handle("/users/", http.StripPrefix("/users", usersMux))

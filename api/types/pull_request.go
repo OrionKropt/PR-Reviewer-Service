@@ -1,9 +1,5 @@
 package types
 
-import (
-	"time"
-)
-
 type PullRequest struct {
 	PullRequestID     string   `json:"pull_request_id"`
 	PullRequestName   string   `json:"pull_request_name"`
@@ -21,13 +17,14 @@ type PullRequestShort struct {
 	Status          string `json:"status"`
 }
 
-func CreatePullRequest(id, name, authorID, status string, reviewers []string) *PullRequest {
+func CreatePullRequest(id, name, authorID, status, createAt, mergedAt string, reviewers []string) *PullRequest {
 	pr := &PullRequest{
 		PullRequestID:     id,
 		PullRequestName:   name,
 		AuthorID:          authorID,
 		Status:            status,
-		CreatedAt:         time.Now().Format(time.RFC3339),
+		CreatedAt:         createAt,
+		MergedAt:          mergedAt,
 		AssignedReviewers: reviewers,
 	}
 	return pr
