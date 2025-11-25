@@ -41,7 +41,7 @@ func (s *Server) handleUsersGetReview() http.HandlerFunc {
 		PRs    []types.PullRequestShort `json:"pull_requests"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID := r.URL.Query().Get("UserIdQuery")
+		userID := r.URL.Query().Get("user_id")
 		prs, err := s.prRevService.GetPullRequestsAsReviewer(userID)
 		response := Response{UserID: userID}
 		if err != nil {
