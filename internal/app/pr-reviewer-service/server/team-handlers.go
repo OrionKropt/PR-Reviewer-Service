@@ -9,9 +9,8 @@ import (
 )
 
 func (s *Server) handleTeamAdd() http.HandlerFunc {
-	team := types.Team{}
-
 	return func(w http.ResponseWriter, r *http.Request) {
+		team := types.Team{}
 		if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
 			s.log.Error("failed to decode JSON request", "handler", "handleTeamAdd", "error", err.Error())
 			writeError(w, s.log, http.StatusBadRequest, types.BadRequest, "", "handleTeamAdd")

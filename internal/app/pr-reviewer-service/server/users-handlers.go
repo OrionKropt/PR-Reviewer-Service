@@ -8,11 +8,12 @@ import (
 )
 
 func (s *Server) handleUsersSetIsActive() http.HandlerFunc {
-	request := struct {
+	type Request struct {
 		IsActive bool   `json:"is_active"`
 		UserId   string `json:"user_id"`
-	}{}
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		request := Request{}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			s.log.Error("failed to decode JSON request", "handler", "handleUsersSetIsActive", "error", err.Error())
 			writeError(w, s.log, http.StatusBadRequest, types.BadRequest, "", "handleUsersSetIsActive")
@@ -35,14 +36,14 @@ func (s *Server) handleUsersSetIsActive() http.HandlerFunc {
 }
 
 func (s *Server) handleUsersGetReview() http.HandlerFunc {
-	response := struct {
+	type Response struct {
 		UserID string                   `json:"user_id"`
 		PRs    []types.PullRequestShort `json:"pull_requests"`
-	}{}
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := r.URL.Query().Get("UserIdQuery")
 		prs, err := s.prRevService.GetPullRequestsAsReviewer(userID)
-		response.UserID = userID
+		response := Response{UserID: userID}
 		if err != nil {
 			s.log.Error("failed to get pull requests as reviewer", "handler", "handleUsersGetReview")
 			response.PRs = make([]types.PullRequestShort, 0)

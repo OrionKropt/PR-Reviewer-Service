@@ -10,12 +10,13 @@ import (
 )
 
 func (s *Server) handlePRCreate() http.HandlerFunc {
-	request := struct {
+	type Request struct {
 		PRID     string `json:"pull_request_id"`
 		PRName   string `json:"pull_request_name"`
 		AuthorId string `json:"author_id"`
-	}{}
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		request := Request{}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			s.log.Error("failed to decode JSON request", "handler", "handlePRCreate", "error", err.Error())
 			writeError(w, s.log, http.StatusBadRequest, types.BadRequest, "", "handlePRCreate")
@@ -52,10 +53,11 @@ func (s *Server) handlePRCreate() http.HandlerFunc {
 }
 
 func (s *Server) handlePRMerge() http.HandlerFunc {
-	request := struct {
+	type Request struct {
 		PRID string `json:"pull_request_id"`
-	}{}
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		request := Request{}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			s.log.Error("failed to decode JSON request", "handler", "handlePRMerge", "error", err.Error())
 			writeError(w, s.log, http.StatusBadRequest, types.BadRequest, "", "handlePRMerge")
@@ -77,15 +79,16 @@ func (s *Server) handlePRMerge() http.HandlerFunc {
 }
 
 func (s *Server) handlePRReassign() http.HandlerFunc {
-	request := struct {
+	type Request struct {
 		PRID      string `json:"pull_request_id"`
 		OldUserID string `json:"old_user_id"`
-	}{}
-	response := struct {
+	}
+	type Response struct {
 		PR         types.PullRequest `json:"pr"`
 		ReplacedBy string            `json:"replaced_by"`
-	}{}
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		request := Request{}
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			s.log.Error("failed to decode JSON request", "handler", "handlePRReassign", "error", err.Error())
 			writeError(w, s.log, http.StatusBadRequest, types.BadRequest, "", "handlePRReassign")
@@ -118,8 +121,10 @@ func (s *Server) handlePRReassign() http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		response.PR = *pr
-		response.ReplacedBy = replacedByID
+		response := Response{
+			PR:         *pr,
+			ReplacedBy: replacedByID,
+		}
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			s.log.Error("failed to encode JSON response", "handler", "handlePRReassign", "error", err.Error())
 		}
