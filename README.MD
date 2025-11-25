@@ -42,6 +42,11 @@ make build
 make run
 ```
 
+Запуск тестов
+```bash
+make test
+```
+
 Очистка артефактов сборки
 ```bash
 make clean
@@ -95,6 +100,30 @@ Endpoints реализованы вручную, без генераторов.
 `POST /pullRequest/reassign` **Переназначить ревьювера**
 
 Меняет конкретного ревьювера на другого, выбранного случайно
+
+## E2E тесты
+
+**1. Создание команды**
+
+    `POST /team/add`  создаёт команду
+    
+    `GET /team/get?team_name=...`  достаёт команду
+
+**2. Создание и мердж PR**
+    
+    `POST /team/add` создаёт команду
+    
+    `POST /pullRequest/create` создает PR
+    
+    `POST /pullRequest/merge` мержит PR
+
+**3. Переназначение ревюера**
+    
+    `POST /team/add` создаёт команду
+    
+    `POST /pullRequest/create` создает PR
+    
+    `POST /pullRequest/reassign` переназначает ревюера
 
 ## Linter Configuration
 
