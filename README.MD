@@ -23,7 +23,7 @@ HTTP-сервис для управления пользователями, ко
 
 ## Запуск сервиса
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 Сервис поднимется на
 ```bash
