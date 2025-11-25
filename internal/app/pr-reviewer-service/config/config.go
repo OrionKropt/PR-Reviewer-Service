@@ -3,12 +3,17 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type Config struct {
-	LogLevel   string `json:"log_level"`
-	BindAddr   string `json:"bind_addr"`
-	configPath string
+	LogLevel            string        `json:"log_level"`
+	BindAddr            string        `json:"bind_addr"`
+	ReadHandlerTimeoutS time.Duration `json:"read_handler_timeout_s"`
+	ReadTimeoutS        time.Duration `json:"read_timeout_s"`
+	WriteTimeoutS       time.Duration `json:"write_timeout_s"`
+	IdleTimeoutS        time.Duration `json:"idle_timeout_s"`
+	configPath          string
 }
 
 func NewConfig() *Config {

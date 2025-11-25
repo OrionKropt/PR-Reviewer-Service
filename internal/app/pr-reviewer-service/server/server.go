@@ -43,8 +43,12 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 	rootMux.Handle("/pullRequest/", http.StripPrefix("/pullRequest", pullRequestMux))
 
 	s.httpServer = &http.Server{
-		Addr:    cfg.BindAddr,
-		Handler: rootMux,
+		Addr:              cfg.BindAddr,
+		Handler:           rootMux,
+		ReadHeaderTimeout: cfg.ReadHandlerTimeoutS,
+		ReadTimeout:       cfg.ReadTimeoutS,
+		WriteTimeout:      cfg.WriteTimeoutS,
+		IdleTimeout:       cfg.IdleTimeoutS,
 	}
 
 	return s

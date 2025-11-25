@@ -1,4 +1,8 @@
 {
   "log_level": "debug",
-  "bind_addr" : ":8080"
+  "bind_addr": ":8080",
+  "read_handler_timeout_s": 5,
+  "read_timeout_s": 10,
+  "write_timeout_s": 10,
+  "idle_timeout_s": 120
 }

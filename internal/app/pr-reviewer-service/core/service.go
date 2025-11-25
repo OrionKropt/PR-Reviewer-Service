@@ -161,6 +161,7 @@ func (s *PRReviewerService) MergePullRequest(id string) (*types.PullRequest, err
 func (s *PRReviewerService) ReassignReviewerPullRequest(id, oldReviewerID string) (*types.PullRequest, string, error) {
 
 	chooseRandomUser := func(users []*dom.User) *dom.User {
+		// #nosec G404 - non-crypto random is acceptable for reviewer selection
 		randomIndex := rand.Intn(len(users))
 		return users[randomIndex]
 	}

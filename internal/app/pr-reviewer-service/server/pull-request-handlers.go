@@ -95,13 +95,13 @@ func (s *Server) handlePRReassign() http.HandlerFunc {
 		if err != nil {
 			s.log.Error("failed to reassign pull requests reviewer", "handler", "handlePRReassign", "error", err.Error())
 			switch {
-			case errors.Is(err, domain.ErrTeamNotFound):
-				fallthrough
-			case errors.Is(err, domain.ErrPRNotFound):
-				fallthrough
-			case errors.Is(err, domain.ErrUserNotFound):
+			case errors.Is(err, domain.ErrTeamNotFound),
+				errors.Is(err, domain.ErrPRNotFound),
+				errors.Is(err, domain.ErrUserNotFound):
+
 				writeError(w, s.log, http.StatusNotFound, types.NotFound, "", "handlePRReassign")
 				return
+
 			case errors.Is(err, domain.ErrUserNotActive):
 				writeError(w, s.log, http.StatusConflict, types.NoCandidate, "no active replacement candidate in team", "handlePRReassign")
 				return
