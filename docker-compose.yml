@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    pull_policy: build
+
     container_name: pr-reviewer-service-container
     hostname: pr-reviewer-service
 
