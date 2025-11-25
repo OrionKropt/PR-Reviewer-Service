@@ -33,3 +33,26 @@ func (s *Server) handleUsersSetIsActive() http.HandlerFunc {
 		}
 	}
 }
+
+func (s *Server) handleUsersGetReview() http.HandlerFunc {
+	response := struct {
+		UserID string                   `json:"user_id"`
+		PRs    []types.PullRequestShort `json:"pull_requests"`
+	}{}
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID := r.URL.Query().Get("UserIdQuery")
+		prs, err := s.prRevService.GetPullRequestsAsReviewer(userID)
+		response.UserID = userID
+		if err != nil {
+			s.log.Error("failed to get pull requests as reviewer", "handler", "handleUsersGetReview")
+			response.PRs = make([]types.PullRequestShort, 0)
+		} else {
+			response.PRs = prs
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			s.log.Error("failed to encode JSON response", "handler", "handleUsersGetReview", "error", err.Error())
+		}
+	}
+}

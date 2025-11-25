@@ -64,6 +64,32 @@ func (s *PRReviewerService) GetTeam(name string) (*types.Team, error) {
 	return outTeam, nil
 }
 
+func (s *PRReviewerService) GetPullRequestsAsReviewer(userID string) ([]types.PullRequestShort, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	user, ok := s.users[userID]
+	if !ok {
+		return nil, fmt.Errorf("user: %s, error: %w", userID, dom.ErrUserNotFound)
+	}
+	team, ok := s.teams[user.TeamName]
+	if !ok {
+		return nil, fmt.Errorf("team: %s, error: %w", user.TeamName, dom.ErrTeamNotFound)
+	}
+
+	prAsReviewer := make([]types.PullRequestShort, 0, len(team.PullRequests))
+	for _, pr := range team.PullRequests {
+		if _, ok = pr.AssignedReviewers[userID]; ok {
+			prAsReviewer = append(prAsReviewer, types.PullRequestShort{
+				PullRequestID:   pr.ID(),
+				PullRequestName: pr.Name,
+				AuthorID:        pr.AuthorID,
+				Status:          pr.Status,
+			})
+		}
+	}
+	return prAsReviewer, nil
+}
+
 func (s *PRReviewerService) SetIsActive(userId string, isActive bool) (*types.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -106,6 +132,7 @@ func (s *PRReviewerService) CreatePullRequest(id, name, authorID string) (*types
 	}
 
 	s.prs[id] = &newPR
+	team.PullRequests[id] = &newPR
 
 	outPR := types.CreatePullRequest(id, name, authorID, newPR.Status, newPR.CreatedAt, newPR.MergedAt, reviewers)
 
@@ -140,20 +167,20 @@ func (s *PRReviewerService) ReassignReviewerPullRequest(id, oldReviewerID string
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	pr, ok := s.prs[id]
-	if !ok {
-		return nil, "", fmt.Errorf("pr: %s, error: %w", id, dom.ErrPRNotFound)
-	}
 	user, ok := s.users[oldReviewerID]
 	if !ok {
 		return nil, "", fmt.Errorf("user: %s, error: %w", oldReviewerID, dom.ErrUserNotFound)
 	}
-	if _, ok = pr.AssignedReviewers[user.ID()]; !ok {
-		return nil, "", fmt.Errorf("user: %s, error: %w", user.ID(), dom.ErrUserNotAssigned)
-	}
 	team, ok := s.teams[user.TeamName]
 	if !ok {
 		return nil, "", fmt.Errorf("team: %s, error: %w", user.TeamName, dom.ErrTeamNotFound)
+	}
+	pr, ok := team.PullRequests[id]
+	if !ok {
+		return nil, "", fmt.Errorf("pr: %s, error: %w", id, dom.ErrPRNotFound)
+	}
+	if _, ok = pr.AssignedReviewers[user.ID()]; !ok {
+		return nil, "", fmt.Errorf("user: %s, error: %w", user.ID(), dom.ErrUserNotAssigned)
 	}
 	if pr.Status == dom.PRMerged {
 		return nil, "", fmt.Errorf("pr: %s, error: %w", pr.Name, dom.ErrPRMerged)

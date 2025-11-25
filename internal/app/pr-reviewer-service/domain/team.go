@@ -1,14 +1,16 @@
 package domain
 
 type Team struct {
-	Name    string
-	Members []*User
+	Name         string
+	PullRequests map[string]*PullRequest
+	Members      []*User
 }
 
 func CreateTeam(name string) Team {
 	return Team{
-		Name:    name,
-		Members: make([]*User, 0),
+		Name:         name,
+		PullRequests: make(map[string]*PullRequest),
+		Members:      make([]*User, 0),
 	}
 }
 

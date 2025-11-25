@@ -31,6 +31,7 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 
 	usersMux := http.NewServeMux()
 	usersMux.Handle("POST /setIsActive", loggingHandler(s.handleUsersSetIsActive()))
+	usersMux.Handle("GET /getReview", loggingHandler(s.handleUsersGetReview()))
 
 	pullRequestMux := http.NewServeMux()
 	pullRequestMux.Handle("POST /create", loggingHandler(s.handlePRCreate()))
