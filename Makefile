@@ -4,17 +4,19 @@ CMD_DIR  := ./cmd/$(APP_NAME)
 BIN_DIR  := ./bin
 BIN_FILE := $(BIN_DIR)/$(APP_NAME)
 
-.PHONY: fmt vet build clean run test lint dev
+.PHONY: fmt vet build clean run test lint dev tidy
 
 all: build
 
 build:
-	go build -o $(BIN_FILE) $(CMD_DIR)
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(BIN_FILE) $(CMD_DIR)
 
 run: build
 	go run $(CMD_DIR)
 
-# TODO TESTS
+test:
+	go test -v ./internal/app/pr-reviewer-service/e2e
+
 lint:
 	golangci-lint run ./...
 

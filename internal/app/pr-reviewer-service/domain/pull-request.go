@@ -1,8 +1,9 @@
 package domain
 
 const (
-	PROpen   = "OPEN"
-	PRMerged = "MERGED"
+	PROpen               = "OPEN"
+	PRMerged             = "MERGED"
+	MaxAssignedReviewers = 2
 )
 
 type PullRequest struct {

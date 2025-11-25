@@ -45,10 +45,10 @@ func NewServer(cfg *config.Config, log *slog.Logger) *Server {
 	s.httpServer = &http.Server{
 		Addr:              cfg.BindAddr,
 		Handler:           rootMux,
-		ReadHeaderTimeout: cfg.ReadHandlerTimeoutS,
-		ReadTimeout:       cfg.ReadTimeoutS,
-		WriteTimeout:      cfg.WriteTimeoutS,
-		IdleTimeout:       cfg.IdleTimeoutS,
+		ReadHeaderTimeout: cfg.ReadHandlerTimeout,
+		ReadTimeout:       cfg.ReadTimeout,
+		WriteTimeout:      cfg.WriteTimeout,
+		IdleTimeout:       cfg.IdleTimeout,
 	}
 
 	return s
@@ -62,4 +62,8 @@ func (s *Server) Start() error {
 func (s *Server) Stop(ctx context.Context) error {
 	s.log.Info("HTTP server stopping")
 	return s.httpServer.Shutdown(ctx)
+}
+
+func (s *Server) HttpHandler() http.Handler {
+	return s.httpServer.Handler
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/OrionKropt/PRReviewerService/internal/app/pr-reviewer-service/server"
 )
 
-func initialze() (cfg *config.Config, log *slog.Logger, err error) {
+func initialize() (cfg *config.Config, log *slog.Logger, err error) {
 	cfg = config.NewConfig()
 	err = cfg.ReadConfig()
 	if err != nil {
@@ -26,7 +26,7 @@ func initialze() (cfg *config.Config, log *slog.Logger, err error) {
 }
 
 func main() {
-	cfg, log, err := initialze()
+	cfg, log, err := initialize()
 	if err != nil {
 		stdlog.Fatal(err)
 		return

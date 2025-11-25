@@ -123,9 +123,9 @@ func (s *PRReviewerService) CreatePullRequest(id, name, authorID string) (*types
 	}
 	newPR := dom.CreatePullRequest(id, name, authorID, currentTime())
 	possibleReviewers, err := getPossibleReviewers(team, &newPR, author)
-	reviewers := make([]string, 0)
+	reviewers := make([]string, 0, dom.MaxAssignedReviewers)
 	if err == nil {
-		for i := 0; i < len(possibleReviewers) && i < 2; i++ {
+		for i := 0; i < len(possibleReviewers) && i < dom.MaxAssignedReviewers; i++ {
 			reviewers = append(reviewers, possibleReviewers[i].ID())
 			newPR.AssignedReviewers[possibleReviewers[i].ID()] = possibleReviewers[i]
 		}
@@ -181,6 +181,7 @@ func (s *PRReviewerService) ReassignReviewerPullRequest(id, oldReviewerID string
 		return nil, "", fmt.Errorf("pr: %s, error: %w", id, dom.ErrPRNotFound)
 	}
 	if _, ok = pr.AssignedReviewers[user.ID()]; !ok {
+		fmt.Println("user", user.ID())
 		return nil, "", fmt.Errorf("user: %s, error: %w", user.ID(), dom.ErrUserNotAssigned)
 	}
 	if pr.Status == dom.PRMerged {
@@ -196,7 +197,7 @@ func (s *PRReviewerService) ReassignReviewerPullRequest(id, oldReviewerID string
 	newReviewer := chooseRandomUser(possibleReviewers)
 	pr.ReassignReviewer(oldReviewerID, newReviewer)
 
-	reviewers := make([]string, 0)
+	reviewers := make([]string, 0, dom.MaxAssignedReviewers)
 	for _, r := range pr.AssignedReviewers {
 		reviewers = append(reviewers, r.ID())
 	}
